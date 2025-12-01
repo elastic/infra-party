@@ -40,13 +40,24 @@ variable "resource_prefix" {
 }
 
 variable "scenario" {
-  description = "Fixture scenario to deploy. Supported values: \"vpc-flow\", \"nlb\"."
+  description = "Fixture scenario to deploy. Supported values: \"vpc-flow\", \"nlb\", \"alb\"."
   type        = string
   default     = "vpc-flow"
 
   validation {
-    condition = contains(["vpc-flow", "nlb"], var.scenario)
-    error_message = "scenario must be one of: vpc-flow, nlb."
+    condition = contains(["vpc-flow", "nlb", "alb"], var.scenario)
+    error_message = "scenario must be one of: vpc-flow, nlb, alb."
+  }
+}
+
+variable "load_balancer_scope" {
+  description = "Scope for the application load balancer (alb scenario only). Supported values: \"global\", \"regional\"."
+  type        = string
+  default     = "regional"
+
+  validation {
+    condition     = contains(["global", "regional"], var.load_balancer_scope)
+    error_message = "load_balancer_scope must be either 'global' or 'regional'."
   }
 }
 
