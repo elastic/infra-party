@@ -40,13 +40,13 @@ variable "resource_prefix" {
 }
 
 variable "scenario" {
-  description = "Fixture scenario to deploy. Supported values: \"vpc-flow\", \"nlb\", \"alb\"."
+  description = "Fixture scenario to deploy. Supported values: \"vpc-flow\", \"nlb\", \"alb\", \"nlb-passthrough\"."
   type        = string
   default     = "vpc-flow"
 
   validation {
-    condition = contains(["vpc-flow", "nlb", "alb"], var.scenario)
-    error_message = "scenario must be one of: vpc-flow, nlb, alb."
+    condition = contains(["vpc-flow", "nlb", "alb", "nlb-passthrough"], var.scenario)
+    error_message = "scenario must be one of: vpc-flow, nlb, alb, nlb-passthrough."
   }
 }
 
