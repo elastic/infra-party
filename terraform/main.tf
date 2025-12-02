@@ -26,7 +26,6 @@ module "nlb" {
   scenario        = var.scenario
 }
 
-
 module "alb" {
   source = "./modules/alb"
   count  = local.is_alb ? 1 : 0

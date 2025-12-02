@@ -42,7 +42,7 @@ cloud infrastructure scenarios on Google Cloud Platform. It currently ships with
    ```
 
 
-   Update `PROJECT_ID`, `REGION`, and `ZONE`. Set `SCENARIO` to `vpc-flow`, `nlb`, or `alb`,  or `nlb-passthrough`
+   Update `PROJECT_ID`, `REGION`, and `ZONE`. Set `SCENARIO` to `vpc-flow`, `nlb`, `alb`,  or `nlb-passthrough`
 
    if you plan to run Terraform manually; the helper scripts force the correct value.
    
@@ -116,12 +116,9 @@ Destroy whichever scenario is active:
    - *VPC Flow Logs*: A Go helper connects to MIG instances over SSH to create east-west traffic.
    - *NLB Logs*: The script waits for backend readiness and for the proxy to respond, then fires curl/netcat traffic from the local machine.
    - *ALB Logs*: The script waits for backend instances and load balancer readiness, then generates HTTP/HTTPS traffic from the local machine using curl.
-3. **Ingestion Delay**: Logs are not immediate. Expect ~10 minutes for VPC flow logs and a few minutes for load balancer logs (both NLB and ALB).
-4. **Export**: `./run.fish export --scenario=<name>` reuses Terraform outputs, applies a default 20-minute window (`START_TIME` = now-20m, `END_TIME` = now), and writes JSON Lines files to `./vpc-fixtures-out`, `./nlb-fixtures-out`, or `./alb-fixtures-out`.
-   - *Proxy NLB Logs*: The script waits for backend readiness and for the proxy to respond, then fires curl/netcat traffic from the local machine.
    - *External Passthrough NLB Logs*: The script waits for backend readiness and for the load balancer to respond, then fires curl/netcat traffic from the local machine.
-3. **Ingestion Delay**: Logs are not immediate. Expect ~10 minutes for VPC flow logs and a few minutes for NLB connection logs.
-4. **Export**: `./run.fish export --scenario=<name>` reuses Terraform outputs, applies a default 20-minute window (`START_TIME` = now-20m, `END_TIME` = now), and writes JSON Lines files to `./vpc-fixtures-out` or `./nlb-fixtures-out`.
+3. **Ingestion Delay**: Logs are not immediate. Expect ~10 minutes for VPC flow logs and a few minutes for load balancer logs (both NLB and ALB).
+4. **Export**: `./run.fish export --scenario=<name>` reuses Terraform outputs, applies a default 20-minute window (`START_TIME` = now-20m, `END_TIME` = now), and writes JSON Lines files to `./vpc-fixtures-out`, `./nlb-fixtures-out`, `./alb-fixtures-out`, or `./nlb-passthrough-fixtures-out`.
 5. **Destroy**: `./run.fish destroy --scenario=<name>` cleans up the Terraform resources. By default it runs in dry-run mode until you pass `--dry-run=false`.
 
 ## Configuration
@@ -130,7 +127,7 @@ Destroy whichever scenario is active:
 
 - `START_TIME` / `END_TIME`: UTC timestamps (`YYYY-MM-DDTHH:MM:SSZ`) used when exporting logs. Default is from 20 minutes ago until now.
 - `MAX_RESULTS`: Caps log entries returned by `gcloud logging read` (default `2000`).
-- `OUTPUT_DIR`: Directory where exports are written (`./vpc-fixtures-out`, `./nlb-fixtures-out`, or `./alb-fixtures-out`, or `./nlb-passthrough-fixtures-out` by default).
+- `OUTPUT_DIR`: Directory where exports are written (`./vpc-fixtures-out`, `./nlb-fixtures-out`, `./alb-fixtures-out`, or `./nlb-passthrough-fixtures-out` by default).
 - `RESOURCE_PREFIX`: Prefix for Terraform resource names (`gcp-fixture` if unset).
 - `LOAD_BALANCER_SCOPE`: For ALB scenario only - set to `global` or `regional` (default: `regional`).
 
