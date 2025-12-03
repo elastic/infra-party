@@ -149,7 +149,7 @@ function scenario::export_logs -a tf_output_file
 
   set -l agg_output "$OUTPUT_DIR/nlb_passthrough_internal_logs.jsonl"
   # Filter by resource type and forwarding rule name for internal passthrough NLB
-  set -l resource_filter "resource.type=\"l4_ps_rule\""
+  set -l resource_filter "resource.type=\"loadbalancing.googleapis.com/InternalNetworkLoadBalancerRule\""
   set -l rule_filter "resource.labels.forwarding_rule_name=\"$forwarding_rule_name\""
 
   common::log "Exporting internal passthrough load balancer logs for forwarding rule $forwarding_rule_name"
