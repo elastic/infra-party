@@ -10,6 +10,9 @@ cloud infrastructure scenarios on Google Cloud Platform. It currently ships with
 - **External Passthrough Network Load Balancer Logs**: Provisions a regional external
   passthrough Network Load Balancer, drives client traffic through the forwarding rule, and
   exports connection logs.
+- **Internal Passthrough Network Load Balancer Logs**: Provisions a regional internal
+  passthrough Network Load Balancer, drives client traffic from within the VPC, and
+  exports connection logs.
 
 ## Prerequisites
 
@@ -42,7 +45,7 @@ cloud infrastructure scenarios on Google Cloud Platform. It currently ships with
    ```
 
 
-   Update `PROJECT_ID`, `REGION`, and `ZONE`. Set `SCENARIO` to `vpc-flow`, `nlb`, `alb`,  or `nlb-passthrough`
+   Update `PROJECT_ID`, `REGION`, and `ZONE`. Set `SCENARIO` to `vpc-flow`, `nlb`, `alb`, `nlb-passthrough`, or `nlb-passthrough-internal`
 
    if you plan to run Terraform manually; the helper scripts force the correct value.
    
@@ -95,7 +98,20 @@ By default, TLS is enabled with self-signed certificates. Traffic is generated o
 ./run.fish export --scenario=nlb-passthrough
 ```
 
-Results are written to `./nlb-fixtures-out/nlb_passthrough_logs.jsonl`.
+Results are written to `./nlb-passthrough-fixtures-out/nlb_passthrough_logs.jsonl`.
+
+### Internal Passthrough Network Load Balancer Scenario
+
+```bash
+./run.fish generate --scenario=nlb-passthrough-internal
+# wait a few minutes for load balancer logs to aggregate
+./run.fish export --scenario=nlb-passthrough-internal
+```
+
+Results are written to `./nlb-passthrough-internal-fixtures-out/nlb_passthrough_internal_logs.jsonl`.
+
+> **Note:** The internal load balancer can only be accessed from within the VPC network.
+> Traffic is generated automatically from the client VM via SSH.
 
 ### Destroy
 
@@ -107,6 +123,7 @@ Destroy whichever scenario is active:
 ./run.fish destroy --scenario=nlb --dry-run=false
 ./run.fish destroy --scenario=alb --dry-run=false
 ./run.fish destroy --scenario=nlb-passthrough --dry-run=false
+./run.fish destroy --scenario=nlb-passthrough-internal --dry-run=false
 ```
 
 ## How It Works
@@ -117,8 +134,9 @@ Destroy whichever scenario is active:
    - *NLB Logs*: The script waits for backend readiness and for the proxy to respond, then fires curl/netcat traffic from the local machine.
    - *ALB Logs*: The script waits for backend instances and load balancer readiness, then generates HTTP/HTTPS traffic from the local machine using curl.
    - *External Passthrough NLB Logs*: The script waits for backend readiness and for the load balancer to respond, then fires curl/netcat traffic from the local machine.
+   - *Internal Passthrough NLB Logs*: The script waits for backend readiness, then fires curl/netcat traffic from the client VM via SSH (internal LBs are only accessible within the VPC).
 3. **Ingestion Delay**: Logs are not immediate. Expect ~10 minutes for VPC flow logs and a few minutes for load balancer logs (both NLB and ALB).
-4. **Export**: `./run.fish export --scenario=<name>` reuses Terraform outputs, applies a default 20-minute window (`START_TIME` = now-20m, `END_TIME` = now), and writes JSON Lines files to `./vpc-fixtures-out`, `./nlb-fixtures-out`, `./alb-fixtures-out`, or `./nlb-passthrough-fixtures-out`.
+4. **Export**: `./run.fish export --scenario=<name>` reuses Terraform outputs, applies a default 20-minute window (`START_TIME` = now-20m, `END_TIME` = now), and writes JSON Lines files to `./vpc-fixtures-out`, `./nlb-fixtures-out`, `./alb-fixtures-out`, `./nlb-passthrough-fixtures-out`, or `./nlb-passthrough-internal-fixtures-out`.
 5. **Destroy**: `./run.fish destroy --scenario=<name>` cleans up the Terraform resources. By default it runs in dry-run mode until you pass `--dry-run=false`.
 
 ## Configuration
@@ -127,7 +145,7 @@ Destroy whichever scenario is active:
 
 - `START_TIME` / `END_TIME`: UTC timestamps (`YYYY-MM-DDTHH:MM:SSZ`) used when exporting logs. Default is from 20 minutes ago until now.
 - `MAX_RESULTS`: Caps log entries returned by `gcloud logging read` (default `2000`).
-- `OUTPUT_DIR`: Directory where exports are written (`./vpc-fixtures-out`, `./nlb-fixtures-out`, `./alb-fixtures-out`, or `./nlb-passthrough-fixtures-out` by default).
+- `OUTPUT_DIR`: Directory where exports are written (`./vpc-fixtures-out`, `./nlb-fixtures-out`, `./alb-fixtures-out`, `./nlb-passthrough-fixtures-out`, or `./nlb-passthrough-internal-fixtures-out` by default).
 - `RESOURCE_PREFIX`: Prefix for Terraform resource names (`gcp-fixture` if unset).
 - `LOAD_BALANCER_SCOPE`: For ALB scenario only - set to `global` or `regional` (default: `regional`).
 
@@ -173,6 +191,16 @@ Both `export` commands produce JSON Lines files (`*.jsonl`). Each line is a comp
 - Key labels include:
     - `project_id`, `network_name`, `region`, `load_balancing_scheme`, `protocol`
     - `forwarding_rule_name`, `target_proxy_name`
+    - `backend_target_name`, `backend_target_type`
+    - `backend_name`, `backend_type`, `backend_scope`, `backend_scope_type`
+- `jsonPayload.connection` records client/server IPs, ports, protocol numbers, byte counts, start/end timestamps, and latency
+
+### Internal Passthrough Network Load Balancer Logs
+
+- `resource.type="l4_ps_rule"`
+- Key labels include:
+    - `project_id`, `network_name`, `region`, `load_balancing_scheme`, `protocol`
+    - `forwarding_rule_name`
     - `backend_target_name`, `backend_target_type`
     - `backend_name`, `backend_type`, `backend_scope`, `backend_scope_type`
 - `jsonPayload.connection` records client/server IPs, ports, protocol numbers, byte counts, start/end timestamps, and latency
@@ -236,6 +264,19 @@ Both `export` commands produce JSON Lines files (`*.jsonl`). Each line is a comp
 - **Readiness Waits**: Startup scripts ensure backend and client VMs are ready before traffic generation
 - **Logging**: Connection logs exported via `resource.type="loadbalancing.googleapis.com/ExternalNetworkLoadBalancerRule"` and filtered by forwarding rule name
 - **Firewall Rules**: Internal traffic, health check access, client-to-backend allow list, SSH access
+
+### Internal Passthrough Network Load Balancer Infra
+
+- **VPC Network**: Custom mode network with subnet (`10.40.0.0/20`)
+- **Backend MIG**: Zonal managed instance group (2 Debian 12 VMs) running NGINX as a simple HTTP server
+- **Health Checks**: Regional TCP health check on port 80 with firewall rules allowing traffic from Google health check probe ranges (`35.191.0.0/16`, `130.211.0.0/22`)
+- **Client VM**: Dedicated client instance within the VPC that generates HTTP and raw TCP traffic (iperf3, curl, netcat) via SSH
+- **Load Balancer**: Regional internal passthrough Network Load Balancer (`INTERNAL` scheme) using a backend service with 100% connection logging
+- **Internal IP Address**: Load balancer uses an internal IP address from the subnet's primary range, accessible only from within the VPC
+- **Readiness Waits**: Startup scripts ensure backend and client VMs are ready before traffic generation
+- **Logging**: Connection logs exported via `resource.type="l4_ps_rule"` and filtered by forwarding rule name
+- **Firewall Rules**: Internal traffic, health check access (Google probe ranges), client-to-backend allow list, SSH access
+- **Traffic Generation**: All traffic must originate from within the VPC; the script SSHs into the client VM to run curl/netcat commands
 
 ## Troubleshooting
 
