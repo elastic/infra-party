@@ -197,13 +197,18 @@ Both `export` commands produce JSON Lines files (`*.jsonl`). Each line is a comp
 
 ### Internal Passthrough Network Load Balancer Logs
 
-- `resource.type="l4_ps_rule"`
+- `resource.type="loadbalancing.googleapis.com/InternalNetworkLoadBalancerRule"`
 - Key labels include:
-    - `project_id`, `network_name`, `region`, `load_balancing_scheme`, `protocol`
-    - `forwarding_rule_name`
-    - `backend_target_name`, `backend_target_type`
-    - `backend_name`, `backend_type`, `backend_scope`, `backend_scope_type`
-- `jsonPayload.connection` records client/server IPs, ports, protocol numbers, byte counts, start/end timestamps, and latency
+    - `project_id`, `region`
+    - `forwarding_rule_name`, `backend_service_name`
+    - `backend_group_name`, `backend_group_type`, `backend_group_scope`
+    - `backend_network_name`, `backend_subnetwork_name`
+- `jsonPayload` contains:
+    - `@type`: `"type.googleapis.com/google.cloud.loadbalancing.type.InternalNetworkLoadBalancerLogEntry"`
+    - `connection`: `clientIp`, `clientPort`, `serverIp`, `serverPort`, `protocol`
+    - `startTime`, `endTime`: Connection timestamps
+    - `packetsReceived`, `packetsSent`: Packet counts (may be present individually or both)
+    - `rtt`: Round-trip time (optional, e.g., `"0.000702357s"`)
 
 ## Infrastructure Details
 
@@ -274,7 +279,7 @@ Both `export` commands produce JSON Lines files (`*.jsonl`). Each line is a comp
 - **Load Balancer**: Regional internal passthrough Network Load Balancer (`INTERNAL` scheme) using a backend service with 100% connection logging
 - **Internal IP Address**: Load balancer uses an internal IP address from the subnet's primary range, accessible only from within the VPC
 - **Readiness Waits**: Startup scripts ensure backend and client VMs are ready before traffic generation
-- **Logging**: Connection logs exported via `resource.type="l4_ps_rule"` and filtered by forwarding rule name
+- **Logging**: Connection logs exported via `resource.type="loadbalancing.googleapis.com/InternalNetworkLoadBalancerRule"` and filtered by forwarding rule name
 - **Firewall Rules**: Internal traffic, health check access (Google probe ranges), client-to-backend allow list, SSH access
 - **Traffic Generation**: All traffic must originate from within the VPC; the script SSHs into the client VM to run curl/netcat commands
 
