@@ -1,9 +1,10 @@
 locals {
-  selected_scenario = var.scenario
-  is_vpc_flow       = local.selected_scenario == "vpc-flow"
-  is_nlb            = local.selected_scenario == "nlb"
-  is_alb           = local.selected_scenario == "alb"
-  is_nlb_passthrough = local.selected_scenario == "nlb-passthrough"
+  selected_scenario           = var.scenario
+  is_vpc_flow                 = local.selected_scenario == "vpc-flow"
+  is_nlb                      = local.selected_scenario == "nlb"
+  is_alb                      = local.selected_scenario == "alb"
+  is_nlb_passthrough          = local.selected_scenario == "nlb-passthrough"
+  is_nlb_passthrough_internal = local.selected_scenario == "nlb-passthrough-internal"
 }
 
 module "vpc_flow" {
@@ -40,6 +41,16 @@ module "alb" {
 module "nlb_passthrough" {
   source = "./modules/nlb-passthrough"
   count  = local.is_nlb_passthrough ? 1 : 0
+
+  region          = var.region
+  zone            = var.zone
+  resource_prefix = var.resource_prefix
+  scenario        = var.scenario
+}
+
+module "nlb_passthrough_internal" {
+  source = "./modules/nlb-passthrough-internal"
+  count  = local.is_nlb_passthrough_internal ? 1 : 0
 
   region          = var.region
   zone            = var.zone
