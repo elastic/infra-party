@@ -115,6 +115,13 @@ switch $command
       rm -f "$tf_output_file"
       exit 1
     end
+
+    if functions -q scenario::deploy_artifacts
+      scenario::deploy_artifacts "$script_dir"; or begin
+        rm -f "$tf_output_file"
+        exit 1
+      end
+    end
     rm -f "$tf_output_file"
 
     scenario::run_traffic "$script_dir"; or begin

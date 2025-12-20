@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loggen
+  namespace: infra-party-k8s-init-logs
+  labels:
+    app: loggen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loggen
+  template:
+    metadata:
+      labels:
+        app: loggen
+      annotations:
+        logs.opentelemetry.io/include-containers: "init-seed,app,sidecar"
+    spec:
+      terminationGracePeriodSeconds: 5
+      initContainers:
+        - name: init-seed
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              for i in $(seq 1 5); do
+                echo "[init-seed] preparing seed step ${i}"
+                sleep 0.2
+              done
+        - name: init-migrate
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              for i in $(seq 1 5); do
+                echo "[init-migrate] migrating step ${i}"
+                sleep 0.2
+              done
+      containers:
+        - name: app
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                echo "[app] heartbeat $(date -Iseconds)"
+                sleep 5
+              done
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+        - name: sidecar
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                echo "[sidecar] helper tick $(date -Iseconds)"
+                sleep 7
+              done
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+
