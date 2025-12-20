@@ -1,0 +1,40 @@
+# Minimal config to demonstrate k8s_observer init-container gap (issue #42810)
+#
+# Run with: otelcol-contrib --config otelcol-local.yaml
+#
+# What to look for in output:
+# - "receiver_creator" logs showing receiver creation for each container
+# - Receivers should be created for main/sidecar containers
+# - NO receiver will be created for init containers (that's the bug)
+
+extensions:
+  k8s_observer:
+    auth_type: kubeConfig
+    # Enable init container observation (requires dev branch with #42810 fix)
+    observe_pending_pods: true
+    observe_init_containers: true
+    # Optional: how long terminated init containers remain observable (default 15m)
+    # init_container_terminated_ttl: 15m
+
+receivers:
+  receiver_creator:
+    watch_observers: [k8s_observer]
+    receivers:
+      nop/container:
+        # Rule: match pods with our annotation, for each container listed in the annotation
+        rule: type == "pod" && pod != nil && pod.annotations != nil && "logs.opentelemetry.io/include-containers" in pod.annotations
+        config: {}
+
+exporters:
+  debug:
+    verbosity: detailed
+
+service:
+  telemetry:
+    logs:
+      level: debug
+  extensions: [k8s_observer]
+  pipelines:
+    logs:
+      receivers: [receiver_creator]
+      exporters: [debug]

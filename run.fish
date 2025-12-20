@@ -115,6 +115,7 @@ switch $command
       rm -f "$tf_output_file"
       exit 1
     end
+
     rm -f "$tf_output_file"
 
     scenario::run_traffic "$script_dir"; or begin
