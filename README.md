@@ -7,7 +7,10 @@ Infra Party provides infrastructure scenarios for generating and collecting obse
 | Scenario | Platform | Description | Docs |
 |----------|----------|-------------|------|
 | **VPC Flow Logs** | GCP | Generates internal VM traffic and exports subnet flow logs | [README](lib/scenarios/vpc-flow/README.md) |
-| **Network Load Balancer** | GCP | Provisions a TCP proxy NLB and exports connection logs | [README](lib/scenarios/nlb/README.md) |
+| **Proxy NLB** | GCP | Provisions a TCP proxy NLB and exports connection logs | [README](lib/scenarios/nlb/README.md) |
+| **Application LB** | GCP | HTTP/HTTPS ALB with global/regional modes and TLS | [README](lib/scenarios/alb/README.md) |
+| **External Passthrough NLB** | GCP | External passthrough Network Load Balancer | [README](lib/scenarios/nlb-passthrough/README.md) |
+| **Internal Passthrough NLB** | GCP | Internal passthrough Network Load Balancer (VPC-only) | [README](lib/scenarios/nlb-passthrough-internal/README.md) |
 | **k8s Init Container Logs** | Kubernetes | Reproduces k8s_observer init-container gap (issue #42810) | [README](k8s/init-container-logs/README.md) |
 
 ## Quick Start

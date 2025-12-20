@@ -58,6 +58,11 @@ function common::export_terraform_env
   set -gx TF_VAR_zone $ZONE
   set -gx TF_VAR_resource_prefix $RESOURCE_PREFIX
   set -gx TF_VAR_scenario $SCENARIO
+  
+  # Optional: set load balancer scope for alb scenario
+  if set -q LOAD_BALANCER_SCOPE
+    set -gx TF_VAR_load_balancer_scope $LOAD_BALANCER_SCOPE
+  end
 end
 
 function common::__terraform_exec -a dir subcommand
