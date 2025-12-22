@@ -47,14 +47,48 @@ otelcol-contrib --config k8s/init-container-logs/collector/otelcol-local.yaml
 
 ## What to look for
 
-Watch the collector output for `receiver_creator` log lines:
+The `run-collector.fish` script filters the collector output and shows which containers are discovered.
 
-**Expected (current buggy behavior):**
-- Receivers created for `app` and `sidecar` containers
-- **NO receiver created for `init-seed` or `init-migrate`** — even though they're in the annotation
+### Before the fix (buggy behavior)
 
-**After the fix:**
-- Receivers should also be created for `init-seed` and `init-migrate`
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  k8s_observer init-container repro (issue #42810)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Expected containers in annotation: init-seed, app, sidecar
+
+  BEFORE fix: only 'app', 'sidecar' discovered
+  AFTER fix:  all four containers discovered
+
+  Config enables: observe_pending_pods + observe_init_containers
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Running collector... (Ctrl+C to stop)
+
+═══════════════════════════════════════════════════════════════════════════
+  Collector ready. Waiting for endpoint discovery...
+═══════════════════════════════════════════════════════════════════════════
+
+═══ LOGGEN POD CONTAINERS DISCOVERED ═══
+  ✓ app
+  ✓ sidecar
+  ✗ init-seed (NOT FOUND - this is the bug!)
+  ✗ init-migrate (NOT FOUND - this is the bug!)
+```
+
+### After the fix (expected behavior)
+
+```
+═══ LOGGEN POD CONTAINERS DISCOVERED ═══
+  ✓ app
+  ✓ sidecar
+  ✓ init-seed
+  ✓ init-migrate
+```
+
+All four containers should be discovered when `observe_pending_pods` and `observe_init_containers` are enabled.
 
 ## How it works
 
