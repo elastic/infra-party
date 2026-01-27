@@ -70,3 +70,5 @@ resource.type="l4_proxy_rule"
 resource.labels.forwarding_rule_name="YOUR_FORWARDING_RULE"
 ```
 
+
+

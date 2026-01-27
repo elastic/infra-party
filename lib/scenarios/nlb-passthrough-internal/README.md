@@ -70,3 +70,5 @@ resource.type="loadbalancing.googleapis.com/InternalNetworkLoadBalancerRule"
 resource.labels.forwarding_rule_name="YOUR_FORWARDING_RULE"
 ```
 
+
+

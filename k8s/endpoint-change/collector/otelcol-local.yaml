@@ -1,0 +1,38 @@
+extensions:
+  k8s_observer:
+    auth_type: kubeConfig
+
+receivers:
+  receiver_creator:
+    watch_observers: [k8s_observer]
+    receivers:
+      # Always matches loggen pod containers; changes to version label trigger restart via resource attrs.
+      nop/always:
+        rule: type == "pod.container" && pod != nil && pod.labels != nil && pod.labels["app"] == "loggen"
+        resource_attributes:
+          app.version: '`pod.labels["version"]`'
+        config: {}
+
+      # Matches only when tier=frontend.
+      nop/frontend:
+        rule: type == "pod.container" && pod != nil && pod.labels != nil && pod.labels["tier"] == "frontend"
+        config: {}
+
+      # Matches only when tier=premium.
+      nop/premium:
+        rule: type == "pod.container" && pod != nil && pod.labels != nil && pod.labels["tier"] == "premium"
+        config: {}
+
+exporters:
+  debug:
+    verbosity: detailed
+
+service:
+  telemetry:
+    logs:
+      level: debug
+  extensions: [k8s_observer]
+  pipelines:
+    logs:
+      receivers: [receiver_creator]
+      exporters: [debug]
