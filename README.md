@@ -20,7 +20,7 @@ Infra Party provides infrastructure scenarios for generating and collecting obse
 See [GCP Setup](docs/gcp-setup.md) for prerequisites and authentication.
 
 ```bash
-# Configure your project 
+# Configure your project
 cp config.env.example config.env
 $EDITOR config.env
 
