@@ -1,0 +1,30 @@
+# Respond to @claude mentions in issue comments
+# Can make code changes, create branches, and open PRs
+
+name: Claude Mention (Issue)
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  respond:
+    if: contains(github.event.comment.body, '@claude') && github.event.issue.pull_request == null
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude Mention Handler
+        uses: elastic/ai-github-actions/workflows/mention-in-issue@main
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}

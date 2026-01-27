@@ -1,0 +1,33 @@
+# Automatic issue triage using Claude (read-only)
+# Analyzes new issues and provides recommendations
+
+name: Issue Triage (Claude)
+
+on:
+  issues:
+    types: [opened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude Issue Triage (Read-Only)
+        uses: elastic/ai-github-actions/workflows/issue-triage/ro@main
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          # Optional: add custom instructions for this repository
+          # additional-instructions: |
+          #   This is a GCP infrastructure testing repository with Terraform modules.
+          #   Issues may relate to: Terraform, GCP, load balancers (ALB/NLB), VPC flow logs, or fish scripts.

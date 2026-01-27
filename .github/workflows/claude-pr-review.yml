@@ -1,0 +1,36 @@
+# Automatic PR review using Claude (read-only)
+# Provides review comments on code changes
+
+name: PR Review (Claude)
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Run Claude PR Review (Read-Only)
+        uses: elastic/ai-github-actions/workflows/pr-review/ro@main
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          # Optional: add custom instructions for this repository
+          # additional-instructions: |
+          #   This is a GCP infrastructure testing repository.
+          #   Pay attention to Terraform best practices and security.
