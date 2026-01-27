@@ -1,0 +1,84 @@
+# Shared action to install repository dependencies
+# Used by Claude workflows and other CI jobs
+
+name: Setup Dependencies
+description: Install Go, Terraform, Fish, gcloud CLI, jq, and kubectl
+
+inputs:
+  go-version:
+    description: Go version to install
+    required: false
+    default: '1.25.3'
+  terraform-version:
+    description: Terraform version to install
+    required: false
+    default: '1.10.3'
+  install-gcloud:
+    description: Whether to install gcloud CLI
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.go-version }}
+        cache: true
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+
+    - name: Install Fish shell
+      shell: bash
+      run: |
+        if command -v fish &>/dev/null; then
+          echo "Fish already installed: $(fish --version)"
+        else
+          sudo apt-get update
+          sudo apt-get install -y fish
+          echo "Installed: $(fish --version)"
+        fi
+
+    - name: Install jq
+      shell: bash
+      run: |
+        if command -v jq &>/dev/null; then
+          echo "jq already installed: $(jq --version)"
+        else
+          sudo apt-get update
+          sudo apt-get install -y jq
+          echo "Installed: $(jq --version)"
+        fi
+
+    - name: Install kubectl
+      shell: bash
+      run: |
+        if command -v kubectl &>/dev/null; then
+          echo "kubectl already installed: $(kubectl version --client --short 2>/dev/null || kubectl version --client)"
+        else
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          echo "Installed: $(kubectl version --client)"
+        fi
+
+    - name: Setup gcloud CLI
+      if: inputs.install-gcloud == 'true'
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Verify installations
+      shell: bash
+      run: |
+        echo "=== Dependency Versions ==="
+        echo "Go:        $(go version)"
+        echo "Terraform: $(terraform version -json | jq -r '.terraform_version')"
+        echo "Fish:      $(fish --version)"
+        echo "jq:        $(jq --version)"
+        echo "kubectl:   $(kubectl version --client -o json | jq -r '.clientVersion.gitVersion')"
+        if command -v gcloud &>/dev/null; then
+          echo "gcloud:    $(gcloud version --format='value(Google Cloud SDK)')"
+        fi

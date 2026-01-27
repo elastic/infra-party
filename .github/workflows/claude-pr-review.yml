@@ -27,6 +27,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
+        with:
+          install-gcloud: 'false'
+
       - name: Run Claude PR Review (Read-Only)
         uses: elastic/ai-github-actions/workflows/pr-review/ro@main
         with:

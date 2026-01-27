@@ -22,6 +22,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
+        with:
+          install-gcloud: 'false'
+
       - name: Run Claude Issue Triage (Read-Only)
         uses: elastic/ai-github-actions/workflows/issue-triage/ro@main
         with:

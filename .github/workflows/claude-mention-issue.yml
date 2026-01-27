@@ -23,6 +23,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
+        with:
+          install-gcloud: 'false'
+
       - name: Run Claude Mention Handler
         uses: elastic/ai-github-actions/workflows/mention-in-issue@main
         with:
