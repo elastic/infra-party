@@ -29,5 +29,5 @@ jobs:
       - name: Run Claude Mention Handler
         uses: elastic/ai-github-actions/workflows/mention-in-pr@main
         with:
-          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}

@@ -25,7 +25,7 @@ jobs:
       - name: Run Claude Issue Triage (Read-Only)
         uses: elastic/ai-github-actions/workflows/issue-triage/ro@main
         with:
-          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
           # Optional: add custom instructions for this repository
           # additional-instructions: |
