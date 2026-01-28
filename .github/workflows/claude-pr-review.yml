@@ -33,7 +33,7 @@ jobs:
           install-gcloud: 'false'
 
       - name: Run Claude PR Review (Read-Only)
-        uses: elastic/ai-github-actions/workflows/pr-review/ro@main
+        uses: elastic/ai-github-actions/workflows/pr-review/ro@v0
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
