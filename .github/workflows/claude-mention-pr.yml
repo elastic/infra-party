@@ -32,15 +32,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
+        with:
+          install-gcloud: "false"
+
       - name: Checkout PR branch
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: gh pr checkout ${{ github.event.issue.number }}
-
-      - name: Setup dependencies
-        uses: ./.github/actions/setup-deps
-        with:
-          install-gcloud: 'false'
 
       - name: Run Claude Mention Handler
         uses: elastic/ai-github-actions/workflows/mention-in-pr/rwxp@v0
