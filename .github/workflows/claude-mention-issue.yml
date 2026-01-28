@@ -17,7 +17,14 @@ permissions:
 
 jobs:
   respond:
-    if: contains(github.event.comment.body, '@claude') && github.event.issue.pull_request == null
+    if: >-
+      contains(github.event.comment.body, '@claude') &&
+      github.event.issue.pull_request == null &&
+      (
+        github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
