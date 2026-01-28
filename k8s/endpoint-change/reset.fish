@@ -3,7 +3,7 @@
 # Deletes the namespace and redeploys fresh.
 
 set -l namespace infra-party-endpoint-change
-set -l script_dir (dirname (status filename))
+set -l script_dir (dirname (status -f))
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Resetting endpoint-change test environment"

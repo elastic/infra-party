@@ -15,7 +15,12 @@ set -l collector_bin otelcol-contrib
 for i in (seq (count $argv))
     switch $argv[$i]
         case --collector-bin
-            set collector_bin $argv[(math $i + 1)]
+            if test (math $i + 1) -le (count $argv)
+                set collector_bin $argv[(math $i + 1)]
+            else
+                echo "Error: --collector-bin requires a value"
+                exit 1
+            end
     end
 end
 
@@ -110,7 +115,7 @@ echo "  Step 1: Reset environment (delete namespace, redeploy)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Kill any existing collector processes to avoid port conflicts
-pkill -9 -f otelcontribcol 2>/dev/null
+pkill -9 -f "$collector_bin" 2>/dev/null
 echo "  Killed any existing collector processes"
 
 # Delete namespace if it exists (this ensures clean state)
