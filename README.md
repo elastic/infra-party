@@ -75,3 +75,5 @@ infra-party/
 1. Create a directory under `k8s/<scenario-name>/`
 2. Add Kustomize manifests and helper scripts
 3. Add a self-contained README
+
+- demist0 - 1/27/26
