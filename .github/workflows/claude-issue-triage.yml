@@ -32,7 +32,7 @@ jobs:
           install-gcloud: 'false'
 
       - name: Run Claude Issue Triage (Read-Only)
-        uses: elastic/ai-github-actions/workflows/issue-triage/ro@main
+        uses: elastic/ai-github-actions/workflows/issue-triage/ro@v0
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
