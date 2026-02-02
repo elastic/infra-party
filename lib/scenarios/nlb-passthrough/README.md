@@ -68,3 +68,5 @@ resource.type="loadbalancing.googleapis.com/ExternalNetworkLoadBalancerRule"
 resource.labels.forwarding_rule_name="YOUR_FORWARDING_RULE"
 ```
 
+
+
