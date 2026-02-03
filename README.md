@@ -12,6 +12,7 @@ Infra Party provides infrastructure scenarios for generating and collecting obse
 | **External Passthrough NLB** | GCP | External passthrough Network Load Balancer | [README](lib/scenarios/nlb-passthrough/README.md) |
 | **Internal Passthrough NLB** | GCP | Internal passthrough Network Load Balancer (VPC-only) | [README](lib/scenarios/nlb-passthrough-internal/README.md) |
 | **k8s Init Container Logs** | Kubernetes | Reproduces k8s_observer init-container gap (issue #42810) | [README](k8s/init-container-logs/README.md) |
+| **k8s Endpoint Change** | Kubernetes | Validates receiver_creator endpoint-change behavior | [README](k8s/endpoint-change/README.md) |
 
 ## Quick Start
 
@@ -33,11 +34,15 @@ $EDITOR config.env
 ### Kubernetes Scenarios
 
 ```bash
-# Deploy workload
+# Init Container Logs scenario
 ./k8s/init-container-logs/deploy-workload.fish
-
-# Run local collector
 ./k8s/init-container-logs/run-collector.fish
+
+# Endpoint Change scenario
+./k8s/endpoint-change/deploy-workload.fish
+./k8s/endpoint-change/run-collector.fish
+# Or run automated test
+./k8s/endpoint-change/test.fish
 ```
 
 ## Repository Structure
@@ -46,7 +51,8 @@ $EDITOR config.env
 infra-party/
 ├── docs/                    # Setup guides
 ├── k8s/                     # Kubernetes scenarios (kubectl-only)
-│   └── init-container-logs/ # k8s_observer init-container repro
+│   ├── init-container-logs/ # k8s_observer init-container repro
+│   └── endpoint-change/     # receiver_creator endpoint-change validation
 ├── lib/
 │   ├── common.fish          # Shared helper functions
 │   └── scenarios/           # Scenario implementations
